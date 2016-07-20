@@ -247,7 +247,13 @@ byte MMA8452Q::readRegister(MMA8452Q_Register reg)
 
 	Wire.requestFrom(address, (byte) 1); //Ask for 1 byte, once done, bus is released by default
 
-	while(!Wire.available()) ; //Wait for the data to come back
+	uint32_t time = millis();
+	while(!Wire.available()){ //Wait for the data to come back
+		if(millis() - time > 500){
+			//Half a second no responce. Abort.
+			return NULL;
+		}
+	}
 
 	return Wire.read(); //Return this one byte
 }
@@ -262,8 +268,13 @@ void MMA8452Q::readRegisters(MMA8452Q_Register reg, byte *buffer, byte len)
 	Wire.endTransmission(false); //endTransmission but keep the connection active
 
 	Wire.requestFrom(address, len); //Ask for bytes, once done, bus is released by default
-
-	while(Wire.available() < len); //Hang out until we get the # of bytes we expect
+	uint32_t time = millis();
+	while(Wire.available() < len){ //Hang out until we get the # of bytes we expect
+		if(millis() - time > 500){
+			//Half a second no responce. Abort.
+			return;
+		}
+	}
 
 	for(int x = 0 ; x < len ; x++)
 		buffer[x] = Wire.read();    
