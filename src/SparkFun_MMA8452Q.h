@@ -29,7 +29,7 @@ Distributed as-is; no warranty is given.
 // MMA8452Q Register Definitions //
 ///////////////////////////////////
 enum MMA8452Q_Register {
-	STATUS_MMA8452Q = 0x00,
+	STATUS = 0x00,
 	OUT_X_MSB = 0x01,
 	OUT_X_LSB = 0x02,
 	OUT_Y_MSB = 0x03,
@@ -85,6 +85,14 @@ enum MMA8452Q_ODR {ODR_800, ODR_400, ODR_200, ODR_100, ODR_50, ODR_12, ODR_6, OD
 #define LANDSCAPE_L 3
 #define LOCKOUT 0x40
 
+// Interrupt Bits
+#define INT_ASLP 1 << 7 //Auto-sleep/wake
+#define INT_TRANS 1 << 5 //Transient interrupt
+#define INT_LNDPRT 1 << 4 //Landscape/portrait detection
+#define INT_PULSE 1 << 3 //Pulse Detection
+#define INT_FF_MT 1 << 2 //Freefall/motion
+#define INT_DRDY 1 //Data Ready
+
 ////////////////////////////////
 // MMA8452Q Class Declaration //
 ////////////////////////////////
@@ -99,6 +107,14 @@ public:
 	byte readTap();
 	byte readPL();
 	
+	void enableInterrupts(byte int1, byte int2, bool activeHigh);
+	void disableInterrupts();
+	
+	void writeRegister(MMA8452Q_Register reg, byte data);
+    void writeRegisters(MMA8452Q_Register reg, byte *buffer, byte len);
+	byte readRegister(MMA8452Q_Register reg);
+    void readRegisters(MMA8452Q_Register reg, byte *buffer, byte len);
+	
     short x, y, z;
 	float cx, cy, cz;
 private:
@@ -111,10 +127,7 @@ private:
 	void setupTap(byte xThs, byte yThs, byte zThs);
 	void setScale(MMA8452Q_Scale fsr);
 	void setODR(MMA8452Q_ODR odr);
-	void writeRegister(MMA8452Q_Register reg, byte data);
-    void writeRegisters(MMA8452Q_Register reg, byte *buffer, byte len);
-	byte readRegister(MMA8452Q_Register reg);
-    void readRegisters(MMA8452Q_Register reg, byte *buffer, byte len);
+	
 };
 
 #endif

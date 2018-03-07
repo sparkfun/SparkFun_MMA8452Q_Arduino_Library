@@ -92,7 +92,52 @@ void MMA8452Q::read()
 //	returns 0 if no new data is present, or a 1 if new data is available.
 byte MMA8452Q::available()
 {
-	return (readRegister(STATUS_MMA8452Q) & 0x08) >> 3;
+	return (readRegister(STATUS) & 0x08) >> 3;
+}
+
+// ENABLES INTERRUPTS ON INT1 and INT2
+//  Sets interrupt to active high, sets first argument as interrupt for pin 1.
+//  Second argument is interrupt for pin 2, third argument sets whether or not pin is active high
+//  Available arguments:
+//   INT_ASLP		Auto-sleep/wake
+//   INT_TRANS		Transient interrupt
+//   INT_LNDPRT		Landscape/portrait detection
+//   INT_PULSE		Pulse Detection
+//   INT_FF_MT		Freefall/motion
+//   INT_DRDY		Data Ready
+
+void MMA8452Q::enableInterrupts(byte int1, byte int2, bool activeHigh)
+{
+	standby();
+	byte ctrl = readRegister(CTRL_REG3);
+	ctrl &= 0x78; //clears bits
+	ctrl |= (activeHigh << 1); //Sets to active High if activeHigh is true
+	writeRegister(CTRL_REG3, ctrl); //Interrupt is left as a push/pull
+	
+	ctrl = 0x00; //clears away all bits
+	ctrl |= int1 | int2; //enables required interrupts
+	writeRegister(CTRL_REG4, ctrl);
+	
+	ctrl = 0x00; //clears away all bits
+	ctrl |= int1; //int1 is routed to Interrupt 1 pin. All other interrupts routed to Interrupt 2 pin
+	writeRegister(CTRL_REG5, ctrl);
+	active();
+}
+
+// DISABLES ALL INTERRUPTS
+
+void MMA8452Q::disableInterrupts()
+{
+	byte ctrl = readRegister(CTRL_REG3);
+	ctrl &= 0x78; //clears bits
+	ctrl |= (0 << 1); //Sets to active low
+	writeRegister(CTRL_REG3, ctrl);
+	
+	ctrl = 0x00; //clears away all bits
+	writeRegister(CTRL_REG4, ctrl);
+	
+	ctrl = 0x00; //clears away all bits
+	writeRegister(CTRL_REG5, ctrl);
 }
 
 // SET FULL-SCALE RANGE
@@ -115,7 +160,7 @@ void MMA8452Q::setODR(MMA8452Q_ODR odr)
 {
 	// Must be in standby mode to make changes!!!
 	byte ctrl = readRegister(CTRL_REG1);
-	ctrl &= 0xC7; // Mask out data rate bits
+	ctrl &= 0xCF; // Mask out data rate bits
 	ctrl |= (odr << 3);
 	writeRegister(CTRL_REG1, ctrl);
 }

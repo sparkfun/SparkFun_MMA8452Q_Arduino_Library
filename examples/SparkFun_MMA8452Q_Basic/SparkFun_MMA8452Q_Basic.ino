@@ -51,6 +51,8 @@ void setup()
   //     with a full-scale range of +/-2g, and an output data rate
   //     of 800 Hz (fastest).
   accel.init();
+  bool activeHigh = true;
+  accel.enableInterrupts(INT_LNDPRT, INT_DRDY, activeHigh);
   //  2. Initialize with FULL-SCALE setting. You can set the scale
   //     using either SCALE_2G, SCALE_4G, or SCALE_8G as the value.
   //     That'll set the scale to +/-2g, 4g, or 8g respectively.
@@ -74,7 +76,6 @@ void loop()
   {
     // First, use accel.read() to read the new variables:
     accel.read();
-    
     // accel.read() will update two sets of variables. 
     // * int's x, y, and z will store the signed 12-bit values 
     //   read out of the accelerometer.
@@ -90,8 +91,7 @@ void loop()
     //  of the MMA8452Q. Check out this function declaration for
     //  an example of how to use that.
     printOrientation();
-    
-    Serial.println(); // Print new line every time.
+    Serial.println();
   }
 }
 
