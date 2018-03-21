@@ -13,7 +13,7 @@ Development environment specifics:
 	Hardware Platform: Arduino Uno
 
 	**Updated for Arduino 1.6.4 5/2015**
-	
+
 This code is beerware; if you see me (or any other SparkFun employee) at the
 local, and you've found our code helpful, please buy us a round!
 
@@ -90,21 +90,21 @@ enum MMA8452Q_ODR {ODR_800, ODR_400, ODR_200, ODR_100, ODR_50, ODR_12, ODR_6, OD
 ////////////////////////////////
 class MMA8452Q
 {
-public:	
+public:
     MMA8452Q(byte addr = 0x1D); // Constructor
-	
+
 	byte init(MMA8452Q_Scale fsr = SCALE_2G, MMA8452Q_ODR odr = ODR_800);
     void read();
 	byte available();
 	byte readTap();
 	byte readPL();
-	
+
     short x, y, z;
 	float cx, cy, cz;
 private:
 	byte address;
 	MMA8452Q_Scale scale;
-	
+
 	void standby();
 	void active();
 	void setupPL();
