@@ -23,9 +23,8 @@ Documentation
 
 Products that use this Library 
 ---------------------------------
-
-* [SEN-12756](https://www.sparkfun.com/products/12756)- Breakout board. 
-
+* [BOB-13926](https://www.sparkfun.com/products/13926) - Breakout board with headers
+* [SEN-12756](https://www.sparkfun.com/products/12756)- Breakout board
 
 License Information
 -------------------
