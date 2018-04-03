@@ -94,12 +94,13 @@ public:
     MMA8452Q(byte addr = 0x1D); // Constructor
 
 	byte init(MMA8452Q_Scale fsr = SCALE_2G, MMA8452Q_ODR odr = ODR_800);
-    void read();
+  void read();
 	byte available();
 	byte readTap();
 	byte readPL();
+  byte readID();
 
-    short x, y, z;
+  short x, y, z;
 	float cx, cy, cz;
 private:
 	byte address;

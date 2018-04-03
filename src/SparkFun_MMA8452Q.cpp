@@ -66,6 +66,12 @@ byte MMA8452Q::init(MMA8452Q_Scale fsr, MMA8452Q_ODR odr)
 	return 1;
 }
 
+byte MMA8452Q::readID()
+{
+  return readRegister(WHO_AM_I);
+}
+
+
 // READ ACCELERATION DATA
 //  This function will read the acceleration values from the MMA8452Q. After
 //	reading, it will update two triplets of variables:
