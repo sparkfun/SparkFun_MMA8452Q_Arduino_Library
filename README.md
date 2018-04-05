@@ -23,6 +23,8 @@ Documentation
 
 Products that use this Library 
 ---------------------------------
+* [SEN-14587](https://www.sparkfun.com/products/14587) - SparkFun breakout board with Qwiic system.
+* [SPX-14248](https://www.sparkfun.com/products/14248) - SparkX breakout board with Qwiic system.
 * [BOB-13926](https://www.sparkfun.com/products/13926) - Breakout board with headers
 * [SEN-12756](https://www.sparkfun.com/products/12756)- Breakout board
 
