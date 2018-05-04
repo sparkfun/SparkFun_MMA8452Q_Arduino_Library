@@ -247,12 +247,15 @@ void MMA8452Q::writeRegisters(MMA8452Q_Register reg, byte *buffer, byte len)
 //	Read a byte from the MMA8452Q register "reg".
 byte MMA8452Q::readRegister(MMA8452Q_Register reg)
 {
-	Wire.beginTransmission(address);
-	Wire.write(reg);
-	Wire.endTransmission(false); //endTransmission but keep the connection active
+	#ifdef _VARIANT_ARDUINO_DUE_X_
+    Wire.requestFrom((uint8_t) address, (uint8_t) 1,(uint32_t) reg, (uint8_t) 1,true);
+	#else
+	    Wire.beginTransmission(address);
+	    Wire.write(addr);
+	    Wire.endTransmission(false);//endTransmission but keep the connection active
 
-	Wire.requestFrom(address, (byte) 1); //Ask for 1 byte, once done, bus is released by default
-
+	    Wire.requestFrom(address, 1);//Ask for 1 byte, once done, bus is released by default
+	#endif
 	if(Wire.available()){ //Wait for the data to come back
 		return Wire.read(); //Return this one byte
 	}
@@ -266,11 +269,15 @@ byte MMA8452Q::readRegister(MMA8452Q_Register reg)
 //	in "buffer" on exit.
 void MMA8452Q::readRegisters(MMA8452Q_Register reg, byte *buffer, byte len)
 {
-	Wire.beginTransmission(address);
-	Wire.write(reg);
-	Wire.endTransmission(false); //endTransmission but keep the connection active
+	#ifdef _VARIANT_ARDUINO_DUE_X_
+    Wire.requestFrom((uint8_t) address, (uint8_t) len,(uint32_t) reg, (uint8_t) 1,true);
+	#else
+	    Wire.beginTransmission(address);
+	    Wire.write(reg);
+	    Wire.endTransmission(false);//endTransmission but keep the connection active
 
-	Wire.requestFrom(address, len); //Ask for bytes, once done, bus is released by default
+	    Wire.requestFrom(address, len);//Ask for bytes, once done, bus is released by default
+	#endif
 	if(Wire.available() == len){
 		for(int x = 0 ; x < len ; x++)
 			buffer[x] = Wire.read();
