@@ -35,6 +35,12 @@ MMA8452Q::MMA8452Q(byte addr)
 	address = addr; // Store address into private variable
 }
 
+bool MMA8452Q::begin(TwoWire &wirePort, uint8_t deviceAddress)
+{
+	_deviceAddress = deviceAddress;
+	_i2cPort = &wirePort;
+}
+
 // INITIALIZATION
 //	This function initializes the MMA8452Q. It sets up the scale (either 2, 4,
 //	or 8g), output data rate, portrait/landscape detection and tap detection.
@@ -46,31 +52,30 @@ byte MMA8452Q::init(MMA8452Q_Scale fsr, MMA8452Q_ODR odr)
 
 	Wire.begin(); // Initialize I2C
 
-	byte c = readRegister(WHO_AM_I);  // Read WHO_AM_I register
+	byte c = readRegister(WHO_AM_I); // Read WHO_AM_I register
 
 	if (c != 0x2A) // WHO_AM_I should always be 0x2A
 	{
 		return 0;
 	}
 
-	standby();  // Must be in standby to change registers
+	standby(); // Must be in standby to change registers
 
-	setScale(scale);  // Set up accelerometer scale
-	setODR(odr);  // Set up output data rate
-	setupPL();  // Set up portrait/landscape detection
+	setScale(scale); // Set up accelerometer scale
+	setODR(odr);	 // Set up output data rate
+	setupPL();		 // Set up portrait/landscape detection
 	// Multiply parameter by 0.0625g to calculate threshold.
 	setupTap(0x80, 0x80, 0x08); // Disable x, y, set z to 0.5g
 
-	active();  // Set to active to start reading
+	active(); // Set to active to start reading
 
 	return 1;
 }
 
 byte MMA8452Q::readID()
 {
-  return readRegister(WHO_AM_I);
+	return readRegister(WHO_AM_I);
 }
-
 
 // READ ACCELERATION DATA
 //  This function will read the acceleration values from the MMA8452Q. After
@@ -81,16 +86,16 @@ byte MMA8452Q::readID()
 //		  those 12-bit values. These variables are in units of g's.
 void MMA8452Q::read()
 {
-	byte rawData[6];  // x/y/z accel register data stored here
+	byte rawData[6]; // x/y/z accel register data stored here
 
-	readRegisters(OUT_X_MSB, rawData, 6);  // Read the six raw data registers into data array
+	readRegisters(OUT_X_MSB, rawData, 6); // Read the six raw data registers into data array
 
-	x = ((short)(rawData[0]<<8 | rawData[1])) >> 4;
-	y = ((short)(rawData[2]<<8 | rawData[3])) >> 4;
-	z = ((short)(rawData[4]<<8 | rawData[5])) >> 4;
-	cx = (float) x / (float)(1<<11) * (float)(scale);
-	cy = (float) y / (float)(1<<11) * (float)(scale);
-	cz = (float) z / (float)(1<<11) * (float)(scale);
+	x = ((short)(rawData[0] << 8 | rawData[1])) >> 4;
+	y = ((short)(rawData[2] << 8 | rawData[3])) >> 4;
+	z = ((short)(rawData[4] << 8 | rawData[5])) >> 4;
+	cx = (float)x / (float)(1 << 11) * (float)(scale);
+	cy = (float)y / (float)(1 << 11) * (float)(scale);
+	cz = (float)z / (float)(1 << 11) * (float)(scale);
 }
 
 // CHECK IF NEW DATA IS AVAILABLE
@@ -108,8 +113,8 @@ void MMA8452Q::setScale(MMA8452Q_Scale fsr)
 {
 	// Must be in standby mode to make changes!!!
 	byte cfg = readRegister(XYZ_DATA_CFG);
-	cfg &= 0xFC; // Mask out scale bits
-	cfg |= (fsr >> 2);  // Neat trick, see page 22. 00 = 2G, 01 = 4A, 10 = 8G
+	cfg &= 0xFC;	   // Mask out scale bits
+	cfg |= (fsr >> 2); // Neat trick, see page 22. 00 = 2G, 01 = 4A, 10 = 8G
 	writeRegister(XYZ_DATA_CFG, cfg);
 }
 
@@ -142,28 +147,28 @@ void MMA8452Q::setupTap(byte xThs, byte yThs, byte zThs)
 	byte temp = 0;
 	if (!(xThs & 0x80)) // If top bit ISN'T set
 	{
-		temp |= 0x3; // Enable taps on x
-		writeRegister(PULSE_THSX, xThs);  // x thresh
+		temp |= 0x3;					 // Enable taps on x
+		writeRegister(PULSE_THSX, xThs); // x thresh
 	}
 	if (!(yThs & 0x80))
 	{
-		temp |= 0xC; // Enable taps on y
-		writeRegister(PULSE_THSY, yThs);  // y thresh
+		temp |= 0xC;					 // Enable taps on y
+		writeRegister(PULSE_THSY, yThs); // y thresh
 	}
 	if (!(zThs & 0x80))
 	{
-		temp |= 0x30; // Enable taps on z
-		writeRegister(PULSE_THSZ, zThs);  // z thresh
+		temp |= 0x30;					 // Enable taps on z
+		writeRegister(PULSE_THSZ, zThs); // z thresh
 	}
 	// Set up single and/or double tap detection on each axis individually.
 	writeRegister(PULSE_CFG, temp | 0x40);
 	// Set the time limit - the maximum time that a tap can be above the thresh
-	writeRegister(PULSE_TMLT, 0x30);  // 30ms time limit at 800Hz odr
+	writeRegister(PULSE_TMLT, 0x30); // 30ms time limit at 800Hz odr
 	// Set the pulse latency - the minimum required time between pulses
-	writeRegister(PULSE_LTCY, 0xA0);  // 200ms (at 800Hz odr) between taps min
+	writeRegister(PULSE_LTCY, 0xA0); // 200ms (at 800Hz odr) between taps min
 	// Set the second pulse window - maximum allowed time between end of
 	//	latency and start of second pulse
-	writeRegister(PULSE_WIND, 0xFF);  // 5. 318ms (max value) between taps max
+	writeRegister(PULSE_WIND, 0xFF); // 5. 318ms (max value) between taps max
 }
 
 // READ TAP STATUS
@@ -191,7 +196,7 @@ void MMA8452Q::setupPL()
 	// 1. Enable P/L
 	writeRegister(PL_CFG, readRegister(PL_CFG) | 0x40); // Set PL_EN (enable)
 	// 2. Set the debounce rate
-	writeRegister(PL_COUNT, 0x50);  // Debounce counter at 100ms (at 800 hz)
+	writeRegister(PL_COUNT, 0x50); // Debounce counter at 100ms (at 800 hz)
 }
 
 // READ PORTRAIT/LANDSCAPE STATUS
@@ -251,12 +256,14 @@ byte MMA8452Q::readRegister(MMA8452Q_Register reg)
 	Wire.write(reg);
 	Wire.endTransmission(false); //endTransmission but keep the connection active
 
-	Wire.requestFrom(address, (byte) 1); //Ask for 1 byte, once done, bus is released by default
+	Wire.requestFrom(address, (byte)1); //Ask for 1 byte, once done, bus is released by default
 
-	if(Wire.available()){ //Wait for the data to come back
+	if (Wire.available())
+	{						//Wait for the data to come back
 		return Wire.read(); //Return this one byte
 	}
-	else{
+	else
+	{
 		return 0;
 	}
 }
@@ -271,8 +278,9 @@ void MMA8452Q::readRegisters(MMA8452Q_Register reg, byte *buffer, byte len)
 	Wire.endTransmission(false); //endTransmission but keep the connection active
 
 	Wire.requestFrom(address, len); //Ask for bytes, once done, bus is released by default
-	if(Wire.available() == len){
-		for(int x = 0 ; x < len ; x++)
+	if (Wire.available() == len)
+	{
+		for (int x = 0; x < len; x++)
 			buffer[x] = Wire.read();
 	}
 }

@@ -24,6 +24,7 @@ Distributed as-is; no warranty is given.
 #define SparkFun_MMA8452Q_h
 
 #include <Arduino.h>
+#include <Wire.h>
 
 ///////////////////////////////////
 // MMA8452Q Register Definitions //
@@ -84,6 +85,7 @@ enum MMA8452Q_ODR {ODR_800, ODR_400, ODR_200, ODR_100, ODR_50, ODR_12, ODR_6, OD
 #define LANDSCAPE_R 2
 #define LANDSCAPE_L 3
 #define LOCKOUT 0x40
+#define MMA8452Q_DEFAULT_ADDRESS 0x1D
 
 ////////////////////////////////
 // MMA8452Q Class Declaration //
@@ -91,8 +93,9 @@ enum MMA8452Q_ODR {ODR_800, ODR_400, ODR_200, ODR_100, ODR_50, ODR_12, ODR_6, OD
 class MMA8452Q
 {
 public:
-    MMA8452Q(byte addr = 0x1D); // Constructor
+  MMA8452Q(byte addr = MMA8452Q_DEFAULT_ADDRESS); // Constructor
 
+	bool begin(TwoWire &wirePort = Wire, uint8_t deviceAddress = MMA8452Q_DEFAULT_ADDRESS);
 	byte init(MMA8452Q_Scale fsr = SCALE_2G, MMA8452Q_ODR odr = ODR_800);
   void read();
 	byte available();
