@@ -50,6 +50,12 @@ bool MMA8452Q::begin(TwoWire &wirePort, uint8_t deviceAddress)
 
 	standby(); // Must be in standby to change registers
 
+	scale = SCALE_2G;
+	odr = ODR_800;
+
+	setScale(scale); // Set up accelerometer scale
+	setODR(odr);	 // Set up output data rate
+	setupPL();		 // Set up portrait/landscape detection
 	// Multiply parameter by 0.0625g to calculate threshold.
 	setupTap(0x80, 0x80, 0x08); // Disable x, y, set z to 0.5g
 
@@ -120,6 +126,28 @@ short MMA8452Q::getZ()
 	z = ((short)(rawData[0] << 8 | rawData[1])) >> 4;
 	return z;
 }
+
+// Returns calculated X acceleration data
+float MMA8452Q::getCalculatedX()
+{
+	x = getX();
+	cx = (float)x / (float)(1 << 11) * (float)(scale);
+	return cx;
+}
+
+// // Returns calculated X acceleration data
+// short MMA8452Q::getCalculatedY()
+// {
+// 	y = getY();
+// 	return (float)y / (float)(1 << 11) * (float)(scale);
+// }
+
+// // Returns calculated Z acceleration data
+// short MMA8452Q::getCalculatedZ()
+// {
+// 	z = getZ();
+// 	return (float)z / (float)(1 << 11) * (float)(scale);
+// }
 
 // READ ACCELERATION DATA
 //  This function will read the acceleration values from the MMA8452Q. After

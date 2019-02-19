@@ -126,15 +126,16 @@ public:
 	short getY();
 	short getZ();
 
-	float getCalculatedX;
-	float getCalculatedY;
-	float getCalculatedZ;
+	float getCalculatedX();
+	float getCalculatedY();
+	float getCalculatedZ();
 
 private:
 	TwoWire *_i2cPort;			//The generic connection to user's chosen I2C hardware
 	uint8_t _deviceAddress; //Keeps track of I2C address. setI2CAddress changes this.
 	byte address;
 	MMA8452Q_Scale scale;
+	MMA8452Q_ODR odr;
 
 	void standby();
 	void active();
