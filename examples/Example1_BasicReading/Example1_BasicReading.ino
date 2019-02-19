@@ -33,58 +33,32 @@
 #include <Wire.h>                 // Must include Wire library for I2C
 #include "SparkFun_MMA8452Q.h"    // Click here to get the library: http://librarymanager/All#SparkFun_MMA8452Q
 
-MMA8452Q accel;               // create instance of the MMA8452 class
+MMA8452Q accel;                   // create instance of the MMA8452 class
 
 void setup() {
   Serial.begin(9600);
   Serial.println("MMA8452Q Test Code!");
   Wire.begin();
-  Wire.setClock(400000);
-  
-  if (accel.begin() == false){
+
+  if (accel.begin() == false) {
     Serial.println("Not Connected. Please check connections and read the hookup guide.");
-    while(1);               
+    while (1);
   }
 }
 
 void loop() {
-  if (accel.available()) {    // Wait for new data from accelerometer
-    accel.read();             // Read new variables
-
+  if (accel.available()) {      // Wait for new data from accelerometer
     printCalculatedAccels();  // Acceleration of x, y, and z directions in g units
-    printOrientation();       // Orientation of the sensor
-
     Serial.println();
     delay(10);
   }
 }
 
 void printCalculatedAccels() {
-  Serial.print(accel.cx, 3);
+  Serial.print(accel.getCalculatedX(), 3);
   Serial.print("\t");
-  Serial.print(accel.cy, 3);
+  Serial.print(accel.getCalculatedY(), 3);
   Serial.print("\t");
-  Serial.print(accel.cz, 3);
+  Serial.print(accel.getCalculatedZ(), 3);
   Serial.print("\t");
-}
-
-void printOrientation() {
-  byte pl = accel.readPL();
-  switch (pl) {
-    case PORTRAIT_U:
-      Serial.print("Portrait Up");
-      break;
-    case PORTRAIT_D:
-      Serial.print("Portrait Down");
-      break;
-    case LANDSCAPE_R:
-      Serial.print("Landscape Right");
-      break;
-    case LANDSCAPE_L:
-      Serial.print("Landscape Left");
-      break;
-    case LOCKOUT:
-      Serial.print("Flat");
-      break;
-  }
 }
