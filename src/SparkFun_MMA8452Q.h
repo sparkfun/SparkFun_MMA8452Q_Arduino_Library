@@ -130,6 +130,12 @@ public:
 	float getCalculatedY();
 	float getCalculatedZ();
 
+	bool isRight();
+	bool isLeft();
+	bool isUp();
+	bool isDown();
+	bool isFlat();
+
 private:
 	TwoWire *_i2cPort = NULL; //The generic connection to user's chosen I2C hardware
 	uint8_t _deviceAddress;		//Keeps track of I2C address. setI2CAddress changes this.
