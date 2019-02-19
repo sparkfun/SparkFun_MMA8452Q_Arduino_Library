@@ -105,6 +105,7 @@ byte MMA8452Q::readID()
 	return readRegister(WHO_AM_I);
 }
 
+// GET FUNCTIONS FOR RAW ACCELERATION DATA
 // Returns raw X acceleration data
 short MMA8452Q::getX()
 {
@@ -129,6 +130,7 @@ short MMA8452Q::getZ()
 	return ((short)(rawData[0] << 8 | rawData[1])) >> 4;
 }
 
+// GET FUNCTIONS FOR CALCULATED ACCELERATION DATA
 // Returns calculated X acceleration data
 float MMA8452Q::getCalculatedX()
 {
@@ -136,7 +138,7 @@ float MMA8452Q::getCalculatedX()
 	return (float)x / (float)(1 << 11) * (float)(scale);
 }
 
-// Returns calculated X acceleration data
+// Returns calculated Y acceleration data
 float MMA8452Q::getCalculatedY()
 {
 	y = getY();
@@ -284,6 +286,42 @@ byte MMA8452Q::readPL()
 		return LOCKOUT;
 	else // Otherwise return LAPO status
 		return (plStat & 0x6) >> 1;
+}
+
+// BOOLEANS TO CHECK FOR ORIENTATION
+bool MMA8452Q::isRight()
+{
+	if (readPL() == LANDSCAPE_R)
+		return true;
+	return false;
+}
+
+bool MMA8452Q::isLeft()
+{
+	if (readPL() == LANDSCAPE_L)
+		return true;
+	return false;
+}
+
+bool MMA8452Q::isUp()
+{
+	if (readPL() == PORTRAIT_U)
+		return true;
+	return false;
+}
+
+bool MMA8452Q::isDown()
+{
+	if (readPL() == PORTRAIT_D)
+		return true;
+	return false;
+}
+
+bool MMA8452Q::isFlat()
+{
+	if (readPL() == LOCKOUT)
+		return true;
+	return false;
 }
 
 // SET STANDBY MODE
