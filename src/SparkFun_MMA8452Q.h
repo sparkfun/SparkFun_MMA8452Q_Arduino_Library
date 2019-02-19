@@ -122,6 +122,14 @@ public:
 	short x, y, z;
 	float cx, cy, cz;
 
+	short getX();
+	short getY();
+	short getZ();
+
+	float getCalculatedX;
+	float getCalculatedY;
+	float getCalculatedZ;
+
 private:
 	TwoWire *_i2cPort;			//The generic connection to user's chosen I2C hardware
 	uint8_t _deviceAddress; //Keeps track of I2C address. setI2CAddress changes this.

@@ -35,6 +35,7 @@ MMA8452Q::MMA8452Q(byte addr)
 	address = addr; // Store address into private variable
 }
 
+// INITIALIZATION (New Implementation of Init)
 bool MMA8452Q::begin(TwoWire &wirePort, uint8_t deviceAddress)
 {
 	_deviceAddress = deviceAddress;
@@ -47,6 +48,12 @@ bool MMA8452Q::begin(TwoWire &wirePort, uint8_t deviceAddress)
 		return false;
 	}
 
+	standby(); // Must be in standby to change registers
+
+	// Multiply parameter by 0.0625g to calculate threshold.
+	setupTap(0x80, 0x80, 0x08); // Disable x, y, set z to 0.5g
+
+	active(); // Set to active to start reading
 
 	return true;
 }
@@ -85,6 +92,33 @@ byte MMA8452Q::init(MMA8452Q_Scale fsr, MMA8452Q_ODR odr)
 byte MMA8452Q::readID()
 {
 	return readRegister(WHO_AM_I);
+}
+
+// Returns raw X acceleration data
+short MMA8452Q::getX()
+{
+	byte rawData[2];
+	readRegisters(OUT_X_MSB, rawData, 2); // Read the X data into a data array
+	x = ((short)(rawData[0] << 8 | rawData[1])) >> 4;
+	return x;
+}
+
+// Returns raw Y acceleration data
+short MMA8452Q::getY()
+{
+	byte rawData[2];
+	readRegisters(OUT_Y_MSB, rawData, 2); // Read the Y data into a data array
+	y = ((short)(rawData[0] << 8 | rawData[1])) >> 4;
+	return y;
+}
+
+// Returns raw Z acceleration data
+short MMA8452Q::getZ()
+{
+	byte rawData[2];
+	readRegisters(OUT_Z_MSB, rawData, 2); // Read the Z data into a data array
+	z = ((short)(rawData[0] << 8 | rawData[1])) >> 4;
+	return z;
 }
 
 // READ ACCELERATION DATA
