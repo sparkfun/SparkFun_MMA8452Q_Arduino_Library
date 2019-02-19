@@ -1,6 +1,6 @@
 /******************************************************************************
-  Reading raw acceleration and orientation from the MMA8452Q
-  SFE_MMA8452Q Library Basic Example Sketch
+  Reading raw acceleration from the MMA8452Q
+  SFE_MMA8452Q Library Raw Data Reading Sketch
   Jim Lindblom @ SparkFun Electronics
   Original Creation Date: June 3, 2014
   https://github.com/sparkfun/MMA8452_Accelerometer
