@@ -48,7 +48,7 @@ void setup() {
 
 void loop() {
   if (accel.available()) {      // Wait for new data from accelerometer
-    printCalculatedAccels();  // Acceleration of x, y, and z directions in g units
+    printCalculatedAccels();    // Acceleration of x, y, and z directions in g units
     Serial.println();
     delay(10);
   }

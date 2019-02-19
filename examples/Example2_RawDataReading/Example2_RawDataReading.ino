@@ -31,58 +31,34 @@
   Distributed as-is; no warranty is given.
 ******************************************************************************/
 #include <Wire.h>                 // Must include Wire library for I2C
-#include "SparkFun_MMA8452Q.h"    // Includes the SFE_MMA8452Q library
+#include "SparkFun_MMA8452Q.h"    // Click here to get the library: http://librarymanager/All#SparkFun_MMA8452Q
 
-MMA8452Q accel;               // create instance of the MMA8452 class
+MMA8452Q accel;                   // create instance of the MMA8452 class
 
 void setup() {
   Serial.begin(9600);
   Serial.println("MMA8452Q Test Code!");
+  Wire.begin();
 
-  accel.init();               // Full-scale range (+/-2g) and fastest output data rate (800 Hz)
-
-
-  // WRITE A FUNCTION TO CHECK IS BOARD IS CONNECTED
+  if (accel.begin() == false) {
+    Serial.println("Not Connected. Please check connections and read the hookup guide.");
+    while (1);
+  }
 }
 
 void loop() {
-  if (accel.available()) {    // Wait for new data from accelerometer
-    accel.read();             // Read new variables
-    
-    printAccels();            // Raw acceleration of x, y, and z directions as signed 12-bit values 
-    printOrientation();       // Orientation of the sensor
-    
+  if (accel.available()) {      // Wait for new data from accelerometer
+    printAccels();              // Acceleration of x, y, and z directions as raw data
     Serial.println();
     delay(10);
   }
 }
 
 void printAccels() {
-  Serial.print(accel.x, 3);
+  Serial.print(accel.getX(), 3);
   Serial.print("\t");
-  Serial.print(accel.y, 3);
+  Serial.print(accel.getY(), 3);
   Serial.print("\t");
-  Serial.print(accel.z, 3);
+  Serial.print(accel.getZ(), 3);
   Serial.print("\t");
-}
-
-void printOrientation() {
-  byte pl = accel.readPL();   
-  switch (pl) {
-    case PORTRAIT_U:
-      Serial.print("Portrait Up");
-      break;
-    case PORTRAIT_D:
-      Serial.print("Portrait Down");
-      break;
-    case LANDSCAPE_R:
-      Serial.print("Landscape Right");
-      break;
-    case LANDSCAPE_L:
-      Serial.print("Landscape Left");
-      break;
-    case LOCKOUT:
-      Serial.print("Flat");
-      break;
-  }
 }
