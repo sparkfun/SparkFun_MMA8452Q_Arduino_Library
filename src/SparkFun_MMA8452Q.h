@@ -131,9 +131,8 @@ public:
 	float getCalculatedZ();
 
 private:
-	TwoWire *_i2cPort;			//The generic connection to user's chosen I2C hardware
-	uint8_t _deviceAddress; //Keeps track of I2C address. setI2CAddress changes this.
-	byte address;
+	TwoWire *_i2cPort = NULL; //The generic connection to user's chosen I2C hardware
+	uint8_t _deviceAddress;		//Keeps track of I2C address. setI2CAddress changes this.
 	MMA8452Q_Scale scale;
 	MMA8452Q_ODR odr;
 

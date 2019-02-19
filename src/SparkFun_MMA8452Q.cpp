@@ -32,7 +32,7 @@ Distributed as-is; no warranty is given.
 //   the SA0 pin is tied to (GND or 3.3V respectively).
 MMA8452Q::MMA8452Q(byte addr)
 {
-	address = addr; // Store address into private variable
+	_deviceAddress = addr; // Store address into private variable
 }
 
 // INITIALIZATION (New Implementation of Init)
@@ -73,6 +73,11 @@ byte MMA8452Q::init(MMA8452Q_Scale fsr, MMA8452Q_ODR odr)
 {
 	scale = fsr; // Haul fsr into our class variable, scale
 
+	if (_i2cPort == NULL)
+	{
+		_i2cPort = &Wire;
+	}
+
 	_i2cPort->begin(); // Initialize I2C
 
 	byte c = readRegister(WHO_AM_I); // Read WHO_AM_I register
@@ -105,8 +110,7 @@ short MMA8452Q::getX()
 {
 	byte rawData[2];
 	readRegisters(OUT_X_MSB, rawData, 2); // Read the X data into a data array
-	x = ((short)(rawData[0] << 8 | rawData[1])) >> 4;
-	return x;
+	return ((short)(rawData[0] << 8 | rawData[1])) >> 4;
 }
 
 // Returns raw Y acceleration data
@@ -114,8 +118,7 @@ short MMA8452Q::getY()
 {
 	byte rawData[2];
 	readRegisters(OUT_Y_MSB, rawData, 2); // Read the Y data into a data array
-	y = ((short)(rawData[0] << 8 | rawData[1])) >> 4;
-	return y;
+	return ((short)(rawData[0] << 8 | rawData[1])) >> 4;
 }
 
 // Returns raw Z acceleration data
@@ -123,31 +126,29 @@ short MMA8452Q::getZ()
 {
 	byte rawData[2];
 	readRegisters(OUT_Z_MSB, rawData, 2); // Read the Z data into a data array
-	z = ((short)(rawData[0] << 8 | rawData[1])) >> 4;
-	return z;
+	return ((short)(rawData[0] << 8 | rawData[1])) >> 4;
 }
 
 // Returns calculated X acceleration data
 float MMA8452Q::getCalculatedX()
 {
 	x = getX();
-	cx = (float)x / (float)(1 << 11) * (float)(scale);
-	return cx;
+	return (float)x / (float)(1 << 11) * (float)(scale);
 }
 
-// // Returns calculated X acceleration data
-// short MMA8452Q::getCalculatedY()
-// {
-// 	y = getY();
-// 	return (float)y / (float)(1 << 11) * (float)(scale);
-// }
+// Returns calculated X acceleration data
+float MMA8452Q::getCalculatedY()
+{
+	y = getY();
+	return (float)y / (float)(1 << 11) * (float)(scale);
+}
 
-// // Returns calculated Z acceleration data
-// short MMA8452Q::getCalculatedZ()
-// {
-// 	z = getZ();
-// 	return (float)z / (float)(1 << 11) * (float)(scale);
-// }
+// Returns calculated Z acceleration data
+float MMA8452Q::getCalculatedZ()
+{
+	z = getZ();
+	return (float)z / (float)(1 << 11) * (float)(scale);
+}
 
 // READ ACCELERATION DATA
 //  This function will read the acceleration values from the MMA8452Q. After
@@ -313,7 +314,7 @@ void MMA8452Q::writeRegister(MMA8452Q_Register reg, byte data)
 //	auto-incrmenting to the next.
 void MMA8452Q::writeRegisters(MMA8452Q_Register reg, byte *buffer, byte len)
 {
-	_i2cPort->beginTransmission(address);
+	_i2cPort->beginTransmission(_deviceAddress);
 	_i2cPort->write(reg);
 	for (int x = 0; x < len; x++)
 		_i2cPort->write(buffer[x]);
@@ -324,11 +325,11 @@ void MMA8452Q::writeRegisters(MMA8452Q_Register reg, byte *buffer, byte len)
 //	Read a byte from the MMA8452Q register "reg".
 byte MMA8452Q::readRegister(MMA8452Q_Register reg)
 {
-	_i2cPort->beginTransmission(address);
+	_i2cPort->beginTransmission(_deviceAddress);
 	_i2cPort->write(reg);
 	_i2cPort->endTransmission(false); //endTransmission but keep the connection active
 
-	_i2cPort->requestFrom(address, (byte)1); //Ask for 1 byte, once done, bus is released by default
+	_i2cPort->requestFrom(_deviceAddress, (byte)1); //Ask for 1 byte, once done, bus is released by default
 
 	if (_i2cPort->available())
 	{							 //Wait for the data to come back
@@ -345,11 +346,11 @@ byte MMA8452Q::readRegister(MMA8452Q_Register reg)
 //	in "buffer" on exit.
 void MMA8452Q::readRegisters(MMA8452Q_Register reg, byte *buffer, byte len)
 {
-	_i2cPort->beginTransmission(address);
+	_i2cPort->beginTransmission(_deviceAddress);
 	_i2cPort->write(reg);
 	_i2cPort->endTransmission(false); //endTransmission but keep the connection active
 
-	_i2cPort->requestFrom(address, len); //Ask for bytes, once done, bus is released by default
+	_i2cPort->requestFrom(_deviceAddress, len); //Ask for bytes, once done, bus is released by default
 	if (_i2cPort->available() == len)
 	{
 		for (int x = 0; x < len; x++)
