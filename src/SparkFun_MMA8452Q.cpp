@@ -39,6 +39,16 @@ bool MMA8452Q::begin(TwoWire &wirePort, uint8_t deviceAddress)
 {
 	_deviceAddress = deviceAddress;
 	_i2cPort = &wirePort;
+
+	byte c = readRegister(WHO_AM_I); // Read WHO_AM_I register
+
+	if (c != 0x2A) // WHO_AM_I should always be 0x2A
+	{
+		return false;
+	}
+
+
+	return true;
 }
 
 // INITIALIZATION
@@ -50,7 +60,7 @@ byte MMA8452Q::init(MMA8452Q_Scale fsr, MMA8452Q_ODR odr)
 {
 	scale = fsr; // Haul fsr into our class variable, scale
 
-	Wire.begin(); // Initialize I2C
+	_i2cPort->begin(); // Initialize I2C
 
 	byte c = readRegister(WHO_AM_I); // Read WHO_AM_I register
 
@@ -241,26 +251,26 @@ void MMA8452Q::writeRegister(MMA8452Q_Register reg, byte data)
 //	auto-incrmenting to the next.
 void MMA8452Q::writeRegisters(MMA8452Q_Register reg, byte *buffer, byte len)
 {
-	Wire.beginTransmission(address);
-	Wire.write(reg);
+	_i2cPort->beginTransmission(address);
+	_i2cPort->write(reg);
 	for (int x = 0; x < len; x++)
-		Wire.write(buffer[x]);
-	Wire.endTransmission(); //Stop transmitting
+		_i2cPort->write(buffer[x]);
+	_i2cPort->endTransmission(); //Stop transmitting
 }
 
 // READ A SINGLE REGISTER
 //	Read a byte from the MMA8452Q register "reg".
 byte MMA8452Q::readRegister(MMA8452Q_Register reg)
 {
-	Wire.beginTransmission(address);
-	Wire.write(reg);
-	Wire.endTransmission(false); //endTransmission but keep the connection active
+	_i2cPort->beginTransmission(address);
+	_i2cPort->write(reg);
+	_i2cPort->endTransmission(false); //endTransmission but keep the connection active
 
-	Wire.requestFrom(address, (byte)1); //Ask for 1 byte, once done, bus is released by default
+	_i2cPort->requestFrom(address, (byte)1); //Ask for 1 byte, once done, bus is released by default
 
-	if (Wire.available())
-	{						//Wait for the data to come back
-		return Wire.read(); //Return this one byte
+	if (_i2cPort->available())
+	{							 //Wait for the data to come back
+		return _i2cPort->read(); //Return this one byte
 	}
 	else
 	{
@@ -273,14 +283,14 @@ byte MMA8452Q::readRegister(MMA8452Q_Register reg)
 //	in "buffer" on exit.
 void MMA8452Q::readRegisters(MMA8452Q_Register reg, byte *buffer, byte len)
 {
-	Wire.beginTransmission(address);
-	Wire.write(reg);
-	Wire.endTransmission(false); //endTransmission but keep the connection active
+	_i2cPort->beginTransmission(address);
+	_i2cPort->write(reg);
+	_i2cPort->endTransmission(false); //endTransmission but keep the connection active
 
-	Wire.requestFrom(address, len); //Ask for bytes, once done, bus is released by default
-	if (Wire.available() == len)
+	_i2cPort->requestFrom(address, len); //Ask for bytes, once done, bus is released by default
+	if (_i2cPort->available() == len)
 	{
 		for (int x = 0; x < len; x++)
-			buffer[x] = Wire.read();
+			buffer[x] = _i2cPort->read();
 	}
 }

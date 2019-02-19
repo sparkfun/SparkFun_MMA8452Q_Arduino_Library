@@ -38,11 +38,13 @@ MMA8452Q accel;               // create instance of the MMA8452 class
 void setup() {
   Serial.begin(9600);
   Serial.println("MMA8452Q Test Code!");
-
-  accel.init();               // Full-scale range (+/-2g) and fastest output data rate (800 Hz)
-
-
-  // WRITE A FUNCTION TO CHECK IS BOARD IS CONNECTED
+  Wire.begin();
+  Wire.setClock(400000);
+  
+  if (accel.begin() == false){
+    Serial.println("Not Connected. Please check connections and read the hookup guide.");
+    while(1);               
+  }
 }
 
 void loop() {
