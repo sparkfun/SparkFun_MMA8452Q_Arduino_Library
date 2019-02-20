@@ -142,7 +142,7 @@ public:
 	bool isFlat();
 
 	void setScale(MMA8452Q_Scale fsr);
-	void setODR(MMA8452Q_ODR odr);
+	void setDataRate(MMA8452Q_ODR odr);
 
 private:
 	TwoWire *_i2cPort = NULL; //The generic connection to user's chosen I2C hardware

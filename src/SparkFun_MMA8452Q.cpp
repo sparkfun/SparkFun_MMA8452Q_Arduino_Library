@@ -54,9 +54,9 @@ bool MMA8452Q::begin(TwoWire &wirePort, uint8_t deviceAddress)
 	scale = SCALE_2G;
 	odr = ODR_800;
 
-	setScale(scale); // Set up accelerometer scale
-	setODR(odr);	 // Set up output data rate
-	setupPL();		 // Set up portrait/landscape detection
+	setScale(scale);  // Set up accelerometer scale
+	setDataRate(odr); // Set up output data rate
+	setupPL();		  // Set up portrait/landscape detection
 
 	// Multiply parameter by 0.0625g to calculate threshold.
 	setupTap(0x80, 0x80, 0x08); // Disable x, y, set z to 0.5g
@@ -89,9 +89,9 @@ byte MMA8452Q::init(MMA8452Q_Scale fsr, MMA8452Q_ODR odr)
 
 	standby(); // Must be in standby to change registers
 
-	setScale(scale); // Set up accelerometer scale
-	setODR(odr);	 // Set up output data rate
-	setupPL();		 // Set up portrait/landscape detection
+	setScale(scale);  // Set up accelerometer scale
+	setDataRate(odr); // Set up output data rate
+	setupPL();		  // Set up portrait/landscape detection
 	// Multiply parameter by 0.0625g to calculate threshold.
 	setupTap(0x80, 0x80, 0x08); // Disable x, y, set z to 0.5g
 
@@ -205,7 +205,7 @@ void MMA8452Q::setScale(MMA8452Q_Scale fsr)
 //	This function sets the output data rate of the MMA8452Q.
 //	Possible values for the odr parameter are: ODR_800, ODR_400, ODR_200,
 //	ODR_100, ODR_50, ODR_12, ODR_6, or ODR_1
-void MMA8452Q::setODR(MMA8452Q_ODR odr)
+void MMA8452Q::setDataRate(MMA8452Q_ODR odr)
 {
 	// Must be in standby mode to make changes!!!
 	// Change to standby if currently in active state

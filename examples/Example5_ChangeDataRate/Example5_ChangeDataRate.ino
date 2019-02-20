@@ -50,7 +50,7 @@ void setup() {
      ODR_100, ODR_50, ODR_12, ODR_6, ODR_1
      Sets data rate to 800, 400, 200, 100, 50, 12.5, 
      6.25, or 1.56 Hz respectively */
-  accel.setODR(ODR_800);
+  accel.setDataRate(ODR_100);
 }
 
 void loop() {
