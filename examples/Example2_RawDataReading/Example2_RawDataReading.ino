@@ -48,17 +48,12 @@ void setup() {
 
 void loop() {
   if (accel.available()) {      // Wait for new data from accelerometer
-    printAccels();              // Acceleration of x, y, and z directions as raw data
+    Serial.print(accel.getX());
+    Serial.print("\t");
+    Serial.print(accel.getY());
+    Serial.print("\t");
+    Serial.print(accel.getZ());
     Serial.println();
     delay(10);
   }
-}
-
-void printAccels() {
-  Serial.print(accel.getX(), 3);
-  Serial.print("\t");
-  Serial.print(accel.getY(), 3);
-  Serial.print("\t");
-  Serial.print(accel.getZ(), 3);
-  Serial.print("\t");
 }
