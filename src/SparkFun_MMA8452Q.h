@@ -113,6 +113,8 @@ class MMA8452Q
 {
 public:
 	MMA8452Q(byte addr = MMA8452Q_DEFAULT_ADDRESS); // Constructor
+	MMA8452Q_Scale scale;
+	MMA8452Q_ODR odr;
 
 	bool begin(TwoWire &wirePort = Wire, uint8_t deviceAddress = MMA8452Q_DEFAULT_ADDRESS);
 	byte init(MMA8452Q_Scale fsr = SCALE_2G, MMA8452Q_ODR odr = ODR_800);
@@ -140,19 +142,17 @@ public:
 	bool isFlat();
 
 	void setScale(MMA8452Q_Scale fsr);
+	void setODR(MMA8452Q_ODR odr);
 
 private:
 	TwoWire *_i2cPort = NULL; //The generic connection to user's chosen I2C hardware
 	uint8_t _deviceAddress;		//Keeps track of I2C address. setI2CAddress changes this.
-	MMA8452Q_Scale scale;
-	MMA8452Q_ODR odr;
 
 	void standby();
 	void active();
 	bool isActive();
 	void setupPL();
 	void setupTap(byte xThs, byte yThs, byte zThs);
-	void setODR(MMA8452Q_ODR odr);
 	void writeRegister(MMA8452Q_Register reg, byte data);
 	void writeRegisters(MMA8452Q_Register reg, byte *buffer, byte len);
 	byte readRegister(MMA8452Q_Register reg);
