@@ -1,5 +1,5 @@
 /******************************************************************************
-  Reading calculated acceleration from the MMA8452Q
+  Reading calculated acceleration from the MMA8452Q in g units
   SFE_MMA8452Q Library Basic Reading SketchS
   Jim Lindblom @ SparkFun Electronics
   Original Creation Date: June 3, 2014
@@ -37,7 +37,7 @@ MMA8452Q accel;                   // create instance of the MMA8452 class
 
 void setup() {
   Serial.begin(9600);
-  Serial.println("MMA8452Q Test Code!");
+  Serial.println("MMA8452Q Basic Reading Code!");
   Wire.begin();
 
   if (accel.begin() == false) {
@@ -48,17 +48,14 @@ void setup() {
 
 void loop() {
   if (accel.available()) {      // Wait for new data from accelerometer
-    printCalculatedAccels();    // Acceleration of x, y, and z directions in g units
+    // Acceleration of x, y, and z directions in g units
+    Serial.print(accel.getCalculatedX(), 3);
+    Serial.print("\t");
+    Serial.print(accel.getCalculatedY(), 3);
+    Serial.print("\t");
+    Serial.print(accel.getCalculatedZ(), 3);
+    Serial.print("\t");
     Serial.println();
     delay(10);
   }
-}
-
-void printCalculatedAccels() {
-  Serial.print(accel.getCalculatedX(), 3);
-  Serial.print("\t");
-  Serial.print(accel.getCalculatedY(), 3);
-  Serial.print("\t");
-  Serial.print(accel.getCalculatedZ(), 3);
-  Serial.print("\t");
 }
