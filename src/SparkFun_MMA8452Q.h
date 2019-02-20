@@ -103,6 +103,9 @@ enum MMA8452Q_ODR
 #define LOCKOUT 0x40
 #define MMA8452Q_DEFAULT_ADDRESS 0x1D
 
+// Posible SYSMOD (system mode) States
+#define STANDBY 0
+
 ////////////////////////////////
 // MMA8452Q Class Declaration //
 ////////////////////////////////
@@ -136,6 +139,8 @@ public:
 	bool isDown();
 	bool isFlat();
 
+	void setScale(MMA8452Q_Scale fsr);
+
 private:
 	TwoWire *_i2cPort = NULL; //The generic connection to user's chosen I2C hardware
 	uint8_t _deviceAddress;		//Keeps track of I2C address. setI2CAddress changes this.
@@ -144,9 +149,9 @@ private:
 
 	void standby();
 	void active();
+	bool isActive();
 	void setupPL();
 	void setupTap(byte xThs, byte yThs, byte zThs);
-	void setScale(MMA8452Q_Scale fsr);
 	void setODR(MMA8452Q_ODR odr);
 	void writeRegister(MMA8452Q_Register reg, byte data);
 	void writeRegisters(MMA8452Q_Register reg, byte *buffer, byte len);

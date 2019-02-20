@@ -35,7 +35,10 @@ MMA8452Q::MMA8452Q(byte addr)
 	_deviceAddress = addr; // Store address into private variable
 }
 
-// INITIALIZATION (New Implementation of Init)
+// BEGIN INITIALIZATION (New Implementation of Init)
+// 	This will be used instead of init in future sketches
+// 	to match Arudino guidelines. We will maintain init
+// 	for backwards compatability purposes.
 bool MMA8452Q::begin(TwoWire &wirePort, uint8_t deviceAddress)
 {
 	_deviceAddress = deviceAddress;
@@ -48,18 +51,15 @@ bool MMA8452Q::begin(TwoWire &wirePort, uint8_t deviceAddress)
 		return false;
 	}
 
-	standby(); // Must be in standby to change registers
-
 	scale = SCALE_2G;
 	odr = ODR_800;
 
 	setScale(scale); // Set up accelerometer scale
 	setODR(odr);	 // Set up output data rate
 	setupPL();		 // Set up portrait/landscape detection
+
 	// Multiply parameter by 0.0625g to calculate threshold.
 	setupTap(0x80, 0x80, 0x08); // Disable x, y, set z to 0.5g
-
-	active(); // Set to active to start reading
 
 	return true;
 }
@@ -187,10 +187,18 @@ byte MMA8452Q::available()
 void MMA8452Q::setScale(MMA8452Q_Scale fsr)
 {
 	// Must be in standby mode to make changes!!!
+	// Change to standby if currently in active state
+	if (isActive() == true)
+		standby();
+
 	byte cfg = readRegister(XYZ_DATA_CFG);
 	cfg &= 0xFC;	   // Mask out scale bits
 	cfg |= (fsr >> 2); // Neat trick, see page 22. 00 = 2G, 01 = 4A, 10 = 8G
 	writeRegister(XYZ_DATA_CFG, cfg);
+
+	// Return to active state when done
+	// Must be in active state to read data
+	active();
 }
 
 // SET THE OUTPUT DATA RATE
@@ -200,10 +208,18 @@ void MMA8452Q::setScale(MMA8452Q_Scale fsr)
 void MMA8452Q::setODR(MMA8452Q_ODR odr)
 {
 	// Must be in standby mode to make changes!!!
+	// Change to standby if currently in active state
+	if (isActive() == true)
+		standby();
+
 	byte ctrl = readRegister(CTRL_REG1);
 	ctrl &= 0xC7; // Mask out data rate bits
 	ctrl |= (odr << 3);
 	writeRegister(CTRL_REG1, ctrl);
+
+	// Return to active state when done
+	// Must be in active state to read data
+	active();
 }
 
 // SET UP TAP DETECTION
@@ -215,6 +231,11 @@ void MMA8452Q::setODR(MMA8452Q_ODR odr)
 //			on that axis.
 void MMA8452Q::setupTap(byte xThs, byte yThs, byte zThs)
 {
+	// Must be in standby mode to make changes!!!
+	// Change to standby if currently in active state
+	if (isActive() == true)
+		standby();
+
 	// Set up single and double tap - 5 steps:
 	// for more info check out this app note:
 	// http://cache.freescale.com/files/sensors/doc/app_note/AN4072.pdf
@@ -244,6 +265,10 @@ void MMA8452Q::setupTap(byte xThs, byte yThs, byte zThs)
 	// Set the second pulse window - maximum allowed time between end of
 	//	latency and start of second pulse
 	writeRegister(PULSE_WIND, 0xFF); // 5. 318ms (max value) between taps max
+
+	// Return to active state when done
+	// Must be in active state to read data
+	active();
 }
 
 // READ TAP STATUS
@@ -266,12 +291,20 @@ byte MMA8452Q::readTap()
 void MMA8452Q::setupPL()
 {
 	// Must be in standby mode to make changes!!!
+	// Change to standby if currently in active state
+	if (isActive() == true)
+		standby();
+
 	// For more info check out this app note:
 	//	http://cache.freescale.com/files/sensors/doc/app_note/AN4068.pdf
 	// 1. Enable P/L
 	writeRegister(PL_CFG, readRegister(PL_CFG) | 0x40); // Set PL_EN (enable)
 	// 2. Set the debounce rate
 	writeRegister(PL_COUNT, 0x50); // Debounce counter at 100ms (at 800 hz)
+
+	// Return to active state when done
+	// Must be in active state to read data
+	active();
 }
 
 // READ PORTRAIT/LANDSCAPE STATUS
@@ -288,7 +321,7 @@ byte MMA8452Q::readPL()
 		return (plStat & 0x6) >> 1;
 }
 
-// BOOLEANS TO CHECK FOR ORIENTATION
+// CHECK FOR ORIENTATION
 bool MMA8452Q::isRight()
 {
 	if (readPL() == LANDSCAPE_R)
@@ -338,6 +371,19 @@ void MMA8452Q::active()
 {
 	byte c = readRegister(CTRL_REG1);
 	writeRegister(CTRL_REG1, c | 0x01); //Set the active bit to begin detection
+}
+
+// CHECK STATE (ACTIVE or STANDBY)
+//	Returns true if in Active State, otherwise return false
+bool MMA8452Q::isActive()
+{
+	byte currentState = readRegister(SYSMOD);
+	Serial.print("Active State ");
+	Serial.println(currentState);
+
+	if (STANDBY == currentState)
+		return false;
+	return true;
 }
 
 // WRITE A SINGLE REGISTER
