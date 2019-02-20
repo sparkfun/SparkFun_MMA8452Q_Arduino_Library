@@ -54,7 +54,7 @@ void setup()
   //  2. Initialize with FULL-SCALE setting. You can set the scale
   //     using either SCALE_2G, SCALE_4G, or SCALE_8G as the value.
   //     That'll set the scale to +/-2g, 4g, or 8g respectively.
-  //accel.init(SCALE_4G); // Uncomment this out if you'd like
+  //     accel.init(SCALE_4G); // Uncomment this out if you'd like
   //  3. Initialize with FULL-SCALE and DATA RATE setting. If you
   //     want control over how fast your accelerometer produces
   //     data use one of the following options in the second param:

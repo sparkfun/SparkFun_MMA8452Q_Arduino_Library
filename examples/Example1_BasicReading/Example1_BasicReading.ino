@@ -54,7 +54,6 @@ void loop() {
     Serial.print(accel.getCalculatedY(), 3);
     Serial.print("\t");
     Serial.print(accel.getCalculatedZ(), 3);
-    Serial.print("\t");
     Serial.println();
     delay(10);
   }

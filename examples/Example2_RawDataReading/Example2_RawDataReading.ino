@@ -37,7 +37,7 @@ MMA8452Q accel;                   // create instance of the MMA8452 class
 
 void setup() {
   Serial.begin(9600);
-  Serial.println("MMA8452Q Test Code!");
+  Serial.println("MMA8452Q Raw Data Reading Code!");
   Wire.begin();
 
   if (accel.begin() == false) {
@@ -48,6 +48,7 @@ void setup() {
 
 void loop() {
   if (accel.available()) {      // Wait for new data from accelerometer
+    // Raw of acceleration of x, y, and z directions
     Serial.print(accel.getX());
     Serial.print("\t");
     Serial.print(accel.getY());

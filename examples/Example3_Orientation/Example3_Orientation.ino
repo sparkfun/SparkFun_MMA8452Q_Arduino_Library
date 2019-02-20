@@ -48,25 +48,22 @@ void setup() {
 
 void loop() {
   if (accel.available()) {      // Wait for new data from accelerometer
-    printOrientation();         // Orientation of board (Right, Left, Down, Up);
+    // Orientation of board (Right, Left, Down, Up);
+    if (accel.isRight() == true) {
+      Serial.println("Right");
+    }
+    else if (accel.isLeft() == true) {
+      Serial.println("Left");
+    }
+    else if (accel.isUp() == true) {
+      Serial.println("Up");
+    }
+    else if (accel.isDown() == true) {
+      Serial.println("Down");
+    }
+    else if (accel.isFlat() == true) {
+      Serial.println("Flat");
+    }
     delay(10);
-  }
-}
-
-void printOrientation() {
-  if (accel.isRight() == true) {
-    Serial.println("Right");
-  }
-  else if (accel.isLeft() == true) {
-    Serial.println("Left");
-  }
-  else if (accel.isUp() == true) {
-    Serial.println("Up");
-  }
-  else if (accel.isDown() == true) {
-    Serial.println("Down");
-  }
-  else if (accel.isFlat() == true) {
-    Serial.println("Flat");
   }
 }
