@@ -31,7 +31,7 @@ local, and you've found our code helpful, please buy us a round!
 Distributed as-is; no warranty is given.
 ******************************************************************************/
 #include <Wire.h> // Must include Wire library for I2C
-#include <SparkFun_MMA8452Q.h> // Includes the SFE_MMA8452Q library
+#include "SparkFun_MMA8452Q.h" // Includes the SFE_MMA8452Q library
 
 // Begin using the library by creating an instance of the MMA8452Q
 //  class. We'll call it "accel". That's what we'll reference from
@@ -74,7 +74,7 @@ void loop()
   {
     // First, use accel.read() to read the new variables:
     accel.read();
-    
+    //Serial.println(accel.x, 3); 
     // accel.read() will update two sets of variables. 
     // * int's x, y, and z will store the signed 12-bit values 
     //   read out of the accelerometer.
@@ -83,13 +83,13 @@ void loop()
     //   are in units of g's.
     // Check the two function declarations below for an example
     // of how to use these variables.
-    printCalculatedAccels();
-    //printAccels(); // Uncomment to print digital readings
+//    printCalculatedAccels();
+    printAccels(); // Uncomment to print digital readings
     
     // The library also supports the portrait/landscape detection
     //  of the MMA8452Q. Check out this function declaration for
     //  an example of how to use that.
-    printOrientation();
+    //printOrientation();
     
     Serial.println(); // Print new line every time.
   }
@@ -101,11 +101,11 @@ void loop()
 //  function!
 void printAccels()
 {
-  Serial.print(accel.x, 3);
+  Serial.print(accel.x);
   Serial.print("\t");
-  Serial.print(accel.y, 3);
+  Serial.print(accel.y);
   Serial.print("\t");
-  Serial.print(accel.z, 3);
+  Serial.print(accel.z);
   Serial.print("\t");
 }
 
