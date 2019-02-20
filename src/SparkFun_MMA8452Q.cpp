@@ -378,8 +378,6 @@ void MMA8452Q::active()
 bool MMA8452Q::isActive()
 {
 	byte currentState = readRegister(SYSMOD);
-	Serial.print("Active State ");
-	Serial.println(currentState);
 
 	if (STANDBY == currentState)
 		return false;
