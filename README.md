@@ -14,11 +14,6 @@ SparkFun Triple Axis Accelerometer Breakout - MMA8452Q Arduino Library
   </tr>
 </table>
 
-
-![SparkFun Triple Axis Accelerometer Breakout - MMA8452Q](https://cdn.sparkfun.com//assets/parts/9/5/1/5/12756-00.jpg)
-
-[*SparkFun Triple Axis Accelerometer Breakout - MMA8452Q (SEN-12756)*](https://www.sparkfun.com/products/12756)
-
 Provides basic accelerometer functionality over I2C protocol. User can select between 2g/4g/8g scale, select low power mode and read filtered or non-filtered data. 
 
 Repository Contents
