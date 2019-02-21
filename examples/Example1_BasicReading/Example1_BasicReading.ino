@@ -4,10 +4,10 @@
   SparkFun Electronics
 
   Do you like this library? Help support SparkFun. Buy a board!
-  https://www.sparkfun.com/
+  https://www.sparkfun.com/products/14587
 
   This sketch uses the SparkFun_MMA8452Q library to initialize
-  the accelerometer, and stream calcuated x, y, z, acceleration
+  the accelerometer and stream calcuated x, y, z, acceleration
   values from it (in g units).
 
   Hardware hookup:
@@ -54,6 +54,5 @@ void loop() {
     Serial.print("\t");
     Serial.print(accel.getCalculatedZ(), 3);
     Serial.println();
-    delay(10);
   }
 }
