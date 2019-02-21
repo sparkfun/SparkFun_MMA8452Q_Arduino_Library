@@ -1,7 +1,7 @@
 /******************************************************************************
 SparkFun_MMA8452Q.h
 SparkFun_MMA8452Q Library Header File
-Jim Lindblom @ SparkFun Electronics
+Jim Lindblom and Andrea DeVore @ SparkFun Electronics
 Original Creation Date: June 3, 2014
 https://github.com/sparkfun/MMA8452_Accelerometer
 
@@ -12,7 +12,7 @@ Development environment specifics:
 	IDE: Arduino 1.0.5
 	Hardware Platform: Arduino Uno
 
-	**Updated for Arduino 1.6.4 5/2015**
+	**Updated for Arduino 1.8.5 2/2019**
 
 This code is beerware; if you see me (or any other SparkFun employee) at the
 local, and you've found our code helpful, please buy us a round!
@@ -104,14 +104,16 @@ enum MMA8452Q_ODR
 #define MMA8452Q_DEFAULT_ADDRESS 0x1D
 
 // Posible SYSMOD (system mode) States
-#define STANDBY 0
+#define SYSMOD_STANDBY 0b00
+#define SYSMOD_WAKE 0b01
+#define SYSMOD_SLEEP 0b10
 
 ////////////////////////////////
 // MMA8452Q Class Declaration //
 ////////////////////////////////
 class MMA8452Q
 {
-public:
+  public:
 	MMA8452Q(byte addr = MMA8452Q_DEFAULT_ADDRESS); // Constructor
 	MMA8452Q_Scale scale;
 	MMA8452Q_ODR odr;
@@ -144,9 +146,9 @@ public:
 	void setScale(MMA8452Q_Scale fsr);
 	void setDataRate(MMA8452Q_ODR odr);
 
-private:
+  private:
 	TwoWire *_i2cPort = NULL; //The generic connection to user's chosen I2C hardware
-	uint8_t _deviceAddress;		//Keeps track of I2C address. setI2CAddress changes this.
+	uint8_t _deviceAddress;   //Keeps track of I2C address. setI2CAddress changes this.
 
 	void standby();
 	void active();

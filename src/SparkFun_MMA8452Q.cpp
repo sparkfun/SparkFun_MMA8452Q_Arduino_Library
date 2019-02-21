@@ -1,7 +1,7 @@
 /******************************************************************************
 SparkFun_MMA8452Q.cpp
 SparkFun_MMA8452Q Library Source File
-Jim Lindblom @ SparkFun Electronics
+Jim Lindblom and Andrea DeVore @ SparkFun Electronics
 Original Creation Date: June 3, 2014
 https://github.com/sparkfun/MMA8452_Accelerometer
 
@@ -13,7 +13,7 @@ Development environment specifics:
 	IDE: Arduino 1.0.5
 	Hardware Platform: Arduino Uno
 
-	**Updated for Arduino 1.6.4 5/2015**
+	**Updated for Arduino 1.8.5 2/2019**
 
 This code is beerware; if you see me (or any other SparkFun employee) at the
 local, and you've found our code helpful, please buy us a round!
@@ -378,8 +378,10 @@ void MMA8452Q::active()
 bool MMA8452Q::isActive()
 {
 	byte currentState = readRegister(SYSMOD);
+	currentState &= 0b00000011;
 
-	if (STANDBY == currentState)
+	// Wake and Sleep are both active SYSMOD states (pg. 10 datasheet)
+	if (currentState == SYSMOD_STANDBY)
 		return false;
 	return true;
 }
