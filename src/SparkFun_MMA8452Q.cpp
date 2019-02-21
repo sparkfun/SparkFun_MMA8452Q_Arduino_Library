@@ -1,7 +1,7 @@
 /******************************************************************************
 SparkFun_MMA8452Q.cpp
 SparkFun_MMA8452Q Library Source File
-Jim Lindblom @ SparkFun Electronics
+Jim Lindblom and Andrea DeVore @ SparkFun Electronics
 Original Creation Date: June 3, 2014
 https://github.com/sparkfun/MMA8452_Accelerometer
 
@@ -13,7 +13,7 @@ Development environment specifics:
 	IDE: Arduino 1.0.5
 	Hardware Platform: Arduino Uno
 
-	**Updated for Arduino 1.6.4 5/2015**
+	**Updated for Arduino 1.8.5 2/2019**
 
 This code is beerware; if you see me (or any other SparkFun employee) at the
 local, and you've found our code helpful, please buy us a round!
@@ -32,7 +32,36 @@ Distributed as-is; no warranty is given.
 //   the SA0 pin is tied to (GND or 3.3V respectively).
 MMA8452Q::MMA8452Q(byte addr)
 {
-	address = addr; // Store address into private variable
+	_deviceAddress = addr; // Store address into private variable
+}
+
+// BEGIN INITIALIZATION (New Implementation of Init)
+// 	This will be used instead of init in future sketches
+// 	to match Arudino guidelines. We will maintain init
+// 	for backwards compatability purposes.
+bool MMA8452Q::begin(TwoWire &wirePort, uint8_t deviceAddress)
+{
+	_deviceAddress = deviceAddress;
+	_i2cPort = &wirePort;
+
+	byte c = readRegister(WHO_AM_I); // Read WHO_AM_I register
+
+	if (c != 0x2A) // WHO_AM_I should always be 0x2A
+	{
+		return false;
+	}
+
+	scale = SCALE_2G;
+	odr = ODR_800;
+
+	setScale(scale);  // Set up accelerometer scale
+	setDataRate(odr); // Set up output data rate
+	setupPL();		  // Set up portrait/landscape detection
+
+	// Multiply parameter by 0.0625g to calculate threshold.
+	setupTap(0x80, 0x80, 0x08); // Disable x, y, set z to 0.5g
+
+	return true;
 }
 
 // INITIALIZATION
@@ -44,33 +73,84 @@ byte MMA8452Q::init(MMA8452Q_Scale fsr, MMA8452Q_ODR odr)
 {
 	scale = fsr; // Haul fsr into our class variable, scale
 
-	Wire.begin(); // Initialize I2C
+	if (_i2cPort == NULL)
+	{
+		_i2cPort = &Wire;
+	}
 
-	byte c = readRegister(WHO_AM_I);  // Read WHO_AM_I register
+	_i2cPort->begin(); // Initialize I2C
+
+	byte c = readRegister(WHO_AM_I); // Read WHO_AM_I register
 
 	if (c != 0x2A) // WHO_AM_I should always be 0x2A
 	{
 		return 0;
 	}
 
-	standby();  // Must be in standby to change registers
+	standby(); // Must be in standby to change registers
 
 	setScale(scale);  // Set up accelerometer scale
-	setODR(odr);  // Set up output data rate
-	setupPL();  // Set up portrait/landscape detection
+	setDataRate(odr); // Set up output data rate
+	setupPL();		  // Set up portrait/landscape detection
 	// Multiply parameter by 0.0625g to calculate threshold.
 	setupTap(0x80, 0x80, 0x08); // Disable x, y, set z to 0.5g
 
-	active();  // Set to active to start reading
+	active(); // Set to active to start reading
 
 	return 1;
 }
 
 byte MMA8452Q::readID()
 {
-  return readRegister(WHO_AM_I);
+	return readRegister(WHO_AM_I);
 }
 
+// GET FUNCTIONS FOR RAW ACCELERATION DATA
+// Returns raw X acceleration data
+short MMA8452Q::getX()
+{
+	byte rawData[2];
+	readRegisters(OUT_X_MSB, rawData, 2); // Read the X data into a data array
+	return ((short)(rawData[0] << 8 | rawData[1])) >> 4;
+}
+
+// Returns raw Y acceleration data
+short MMA8452Q::getY()
+{
+	byte rawData[2];
+	readRegisters(OUT_Y_MSB, rawData, 2); // Read the Y data into a data array
+	return ((short)(rawData[0] << 8 | rawData[1])) >> 4;
+}
+
+// Returns raw Z acceleration data
+short MMA8452Q::getZ()
+{
+	byte rawData[2];
+	readRegisters(OUT_Z_MSB, rawData, 2); // Read the Z data into a data array
+	return ((short)(rawData[0] << 8 | rawData[1])) >> 4;
+}
+
+// GET FUNCTIONS FOR CALCULATED ACCELERATION DATA
+// Returns calculated X acceleration data
+float MMA8452Q::getCalculatedX()
+{
+	x = getX();
+	return (float)x / (float)(1 << 11) * (float)(scale);
+}
+
+// Returns calculated Y acceleration data
+float MMA8452Q::getCalculatedY()
+{
+	y = getY();
+	return (float)y / (float)(1 << 11) * (float)(scale);
+}
+
+// Returns calculated Z acceleration data
+float MMA8452Q::getCalculatedZ()
+{
+	z = getZ();
+	return (float)z / (float)(1 << 11) * (float)(scale);
+}
 
 // READ ACCELERATION DATA
 //  This function will read the acceleration values from the MMA8452Q. After
@@ -81,16 +161,16 @@ byte MMA8452Q::readID()
 //		  those 12-bit values. These variables are in units of g's.
 void MMA8452Q::read()
 {
-	byte rawData[6];  // x/y/z accel register data stored here
+	byte rawData[6]; // x/y/z accel register data stored here
 
-	readRegisters(OUT_X_MSB, rawData, 6);  // Read the six raw data registers into data array
+	readRegisters(OUT_X_MSB, rawData, 6); // Read the six raw data registers into data array
 
-	x = ((short)(rawData[0]<<8 | rawData[1])) >> 4;
-	y = ((short)(rawData[2]<<8 | rawData[3])) >> 4;
-	z = ((short)(rawData[4]<<8 | rawData[5])) >> 4;
-	cx = (float) x / (float)(1<<11) * (float)(scale);
-	cy = (float) y / (float)(1<<11) * (float)(scale);
-	cz = (float) z / (float)(1<<11) * (float)(scale);
+	x = ((short)(rawData[0] << 8 | rawData[1])) >> 4;
+	y = ((short)(rawData[2] << 8 | rawData[3])) >> 4;
+	z = ((short)(rawData[4] << 8 | rawData[5])) >> 4;
+	cx = (float)x / (float)(1 << 11) * (float)(scale);
+	cy = (float)y / (float)(1 << 11) * (float)(scale);
+	cz = (float)z / (float)(1 << 11) * (float)(scale);
 }
 
 // CHECK IF NEW DATA IS AVAILABLE
@@ -107,23 +187,39 @@ byte MMA8452Q::available()
 void MMA8452Q::setScale(MMA8452Q_Scale fsr)
 {
 	// Must be in standby mode to make changes!!!
+	// Change to standby if currently in active state
+	if (isActive() == true)
+		standby();
+
 	byte cfg = readRegister(XYZ_DATA_CFG);
-	cfg &= 0xFC; // Mask out scale bits
-	cfg |= (fsr >> 2);  // Neat trick, see page 22. 00 = 2G, 01 = 4A, 10 = 8G
+	cfg &= 0xFC;	   // Mask out scale bits
+	cfg |= (fsr >> 2); // Neat trick, see page 22. 00 = 2G, 01 = 4A, 10 = 8G
 	writeRegister(XYZ_DATA_CFG, cfg);
+
+	// Return to active state when done
+	// Must be in active state to read data
+	active();
 }
 
 // SET THE OUTPUT DATA RATE
 //	This function sets the output data rate of the MMA8452Q.
 //	Possible values for the odr parameter are: ODR_800, ODR_400, ODR_200,
 //	ODR_100, ODR_50, ODR_12, ODR_6, or ODR_1
-void MMA8452Q::setODR(MMA8452Q_ODR odr)
+void MMA8452Q::setDataRate(MMA8452Q_ODR odr)
 {
 	// Must be in standby mode to make changes!!!
+	// Change to standby if currently in active state
+	if (isActive() == true)
+		standby();
+
 	byte ctrl = readRegister(CTRL_REG1);
 	ctrl &= 0xC7; // Mask out data rate bits
 	ctrl |= (odr << 3);
 	writeRegister(CTRL_REG1, ctrl);
+
+	// Return to active state when done
+	// Must be in active state to read data
+	active();
 }
 
 // SET UP TAP DETECTION
@@ -135,6 +231,11 @@ void MMA8452Q::setODR(MMA8452Q_ODR odr)
 //			on that axis.
 void MMA8452Q::setupTap(byte xThs, byte yThs, byte zThs)
 {
+	// Must be in standby mode to make changes!!!
+	// Change to standby if currently in active state
+	if (isActive() == true)
+		standby();
+
 	// Set up single and double tap - 5 steps:
 	// for more info check out this app note:
 	// http://cache.freescale.com/files/sensors/doc/app_note/AN4072.pdf
@@ -142,28 +243,32 @@ void MMA8452Q::setupTap(byte xThs, byte yThs, byte zThs)
 	byte temp = 0;
 	if (!(xThs & 0x80)) // If top bit ISN'T set
 	{
-		temp |= 0x3; // Enable taps on x
-		writeRegister(PULSE_THSX, xThs);  // x thresh
+		temp |= 0x3;					 // Enable taps on x
+		writeRegister(PULSE_THSX, xThs); // x thresh
 	}
 	if (!(yThs & 0x80))
 	{
-		temp |= 0xC; // Enable taps on y
-		writeRegister(PULSE_THSY, yThs);  // y thresh
+		temp |= 0xC;					 // Enable taps on y
+		writeRegister(PULSE_THSY, yThs); // y thresh
 	}
 	if (!(zThs & 0x80))
 	{
-		temp |= 0x30; // Enable taps on z
-		writeRegister(PULSE_THSZ, zThs);  // z thresh
+		temp |= 0x30;					 // Enable taps on z
+		writeRegister(PULSE_THSZ, zThs); // z thresh
 	}
 	// Set up single and/or double tap detection on each axis individually.
 	writeRegister(PULSE_CFG, temp | 0x40);
 	// Set the time limit - the maximum time that a tap can be above the thresh
-	writeRegister(PULSE_TMLT, 0x30);  // 30ms time limit at 800Hz odr
+	writeRegister(PULSE_TMLT, 0x30); // 30ms time limit at 800Hz odr
 	// Set the pulse latency - the minimum required time between pulses
-	writeRegister(PULSE_LTCY, 0xA0);  // 200ms (at 800Hz odr) between taps min
+	writeRegister(PULSE_LTCY, 0xA0); // 200ms (at 800Hz odr) between taps min
 	// Set the second pulse window - maximum allowed time between end of
 	//	latency and start of second pulse
-	writeRegister(PULSE_WIND, 0xFF);  // 5. 318ms (max value) between taps max
+	writeRegister(PULSE_WIND, 0xFF); // 5. 318ms (max value) between taps max
+
+	// Return to active state when done
+	// Must be in active state to read data
+	active();
 }
 
 // READ TAP STATUS
@@ -186,12 +291,20 @@ byte MMA8452Q::readTap()
 void MMA8452Q::setupPL()
 {
 	// Must be in standby mode to make changes!!!
+	// Change to standby if currently in active state
+	if (isActive() == true)
+		standby();
+
 	// For more info check out this app note:
 	//	http://cache.freescale.com/files/sensors/doc/app_note/AN4068.pdf
 	// 1. Enable P/L
 	writeRegister(PL_CFG, readRegister(PL_CFG) | 0x40); // Set PL_EN (enable)
 	// 2. Set the debounce rate
-	writeRegister(PL_COUNT, 0x50);  // Debounce counter at 100ms (at 800 hz)
+	writeRegister(PL_COUNT, 0x50); // Debounce counter at 100ms (at 800 hz)
+
+	// Return to active state when done
+	// Must be in active state to read data
+	active();
 }
 
 // READ PORTRAIT/LANDSCAPE STATUS
@@ -206,6 +319,42 @@ byte MMA8452Q::readPL()
 		return LOCKOUT;
 	else // Otherwise return LAPO status
 		return (plStat & 0x6) >> 1;
+}
+
+// CHECK FOR ORIENTATION
+bool MMA8452Q::isRight()
+{
+	if (readPL() == LANDSCAPE_R)
+		return true;
+	return false;
+}
+
+bool MMA8452Q::isLeft()
+{
+	if (readPL() == LANDSCAPE_L)
+		return true;
+	return false;
+}
+
+bool MMA8452Q::isUp()
+{
+	if (readPL() == PORTRAIT_U)
+		return true;
+	return false;
+}
+
+bool MMA8452Q::isDown()
+{
+	if (readPL() == PORTRAIT_D)
+		return true;
+	return false;
+}
+
+bool MMA8452Q::isFlat()
+{
+	if (readPL() == LOCKOUT)
+		return true;
+	return false;
 }
 
 // SET STANDBY MODE
@@ -224,6 +373,19 @@ void MMA8452Q::active()
 	writeRegister(CTRL_REG1, c | 0x01); //Set the active bit to begin detection
 }
 
+// CHECK STATE (ACTIVE or STANDBY)
+//	Returns true if in Active State, otherwise return false
+bool MMA8452Q::isActive()
+{
+	byte currentState = readRegister(SYSMOD);
+	currentState &= 0b00000011;
+
+	// Wake and Sleep are both active SYSMOD states (pg. 10 datasheet)
+	if (currentState == SYSMOD_STANDBY)
+		return false;
+	return true;
+}
+
 // WRITE A SINGLE REGISTER
 // 	Write a single byte of data to a register in the MMA8452Q.
 void MMA8452Q::writeRegister(MMA8452Q_Register reg, byte data)
@@ -236,27 +398,29 @@ void MMA8452Q::writeRegister(MMA8452Q_Register reg, byte data)
 //	auto-incrmenting to the next.
 void MMA8452Q::writeRegisters(MMA8452Q_Register reg, byte *buffer, byte len)
 {
-	Wire.beginTransmission(address);
-	Wire.write(reg);
+	_i2cPort->beginTransmission(_deviceAddress);
+	_i2cPort->write(reg);
 	for (int x = 0; x < len; x++)
-		Wire.write(buffer[x]);
-	Wire.endTransmission(); //Stop transmitting
+		_i2cPort->write(buffer[x]);
+	_i2cPort->endTransmission(); //Stop transmitting
 }
 
 // READ A SINGLE REGISTER
 //	Read a byte from the MMA8452Q register "reg".
 byte MMA8452Q::readRegister(MMA8452Q_Register reg)
 {
-	Wire.beginTransmission(address);
-	Wire.write(reg);
-	Wire.endTransmission(false); //endTransmission but keep the connection active
+	_i2cPort->beginTransmission(_deviceAddress);
+	_i2cPort->write(reg);
+	_i2cPort->endTransmission(false); //endTransmission but keep the connection active
 
-	Wire.requestFrom(address, (byte) 1); //Ask for 1 byte, once done, bus is released by default
+	_i2cPort->requestFrom(_deviceAddress, (byte)1); //Ask for 1 byte, once done, bus is released by default
 
-	if(Wire.available()){ //Wait for the data to come back
-		return Wire.read(); //Return this one byte
+	if (_i2cPort->available())
+	{							 //Wait for the data to come back
+		return _i2cPort->read(); //Return this one byte
 	}
-	else{
+	else
+	{
 		return 0;
 	}
 }
@@ -266,13 +430,14 @@ byte MMA8452Q::readRegister(MMA8452Q_Register reg)
 //	in "buffer" on exit.
 void MMA8452Q::readRegisters(MMA8452Q_Register reg, byte *buffer, byte len)
 {
-	Wire.beginTransmission(address);
-	Wire.write(reg);
-	Wire.endTransmission(false); //endTransmission but keep the connection active
+	_i2cPort->beginTransmission(_deviceAddress);
+	_i2cPort->write(reg);
+	_i2cPort->endTransmission(false); //endTransmission but keep the connection active
 
-	Wire.requestFrom(address, len); //Ask for bytes, once done, bus is released by default
-	if(Wire.available() == len){
-		for(int x = 0 ; x < len ; x++)
-			buffer[x] = Wire.read();
+	_i2cPort->requestFrom(_deviceAddress, len); //Ask for bytes, once done, bus is released by default
+	if (_i2cPort->available() == len)
+	{
+		for (int x = 0; x < len; x++)
+			buffer[x] = _i2cPort->read();
 	}
 }
