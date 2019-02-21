@@ -1,6 +1,20 @@
 SparkFun Triple Axis Accelerometer Breakout - MMA8452Q Arduino Library
 ========================================
 
+<table class="table table-hover table-striped table-bordered">
+  <tr align="center">
+   <td><a href="https://www.sparkfun.com/products/12756"><img src="https://cdn.sparkfun.com//assets/parts/9/5/1/5/12756-00.jpg"></a></td>
+   <td><a href="https://www.sparkfun.com/products/13926"><img src="https://cdn.sparkfun.com//assets/parts/1/0/0/0/2/13926-02.jpg"></a></td>
+   <td><a href="https://www.sparkfun.com/products/14587"><img src="https://cdn.sparkfun.com//assets/parts/1/2/7/4/0/14587-SparkFun_Accelerometer_Breakout_-_MMA8452Q__Qwiic_-01.jpg"></a></td>
+  </tr>
+  <tr align="center">
+    <td><a href="https://www.sparkfun.com/products/12756">SparkFun Triple Axis Accelerometer Breakout - MMA8452Q</a></td>
+    <td><a href="https://www.sparkfun.com/products/13926">SparkFun Triple Axis Accelerometer Breakout - MMA8452Q (with Headers)</a></td>
+    <td><a href="https://www.sparkfun.com/products/14587">SparkFun Triple Axis Accelerometer Breakout - MMA8452Q (Qwiic)</a></td>
+  </tr>
+</table>
+
+
 ![SparkFun Triple Axis Accelerometer Breakout - MMA8452Q](https://cdn.sparkfun.com//assets/parts/9/5/1/5/12756-00.jpg)
 
 [*SparkFun Triple Axis Accelerometer Breakout - MMA8452Q (SEN-12756)*](https://www.sparkfun.com/products/12756)
@@ -23,10 +37,9 @@ Documentation
 
 Products that use this Library 
 ---------------------------------
-* [SEN-14587](https://www.sparkfun.com/products/14587) - SparkFun breakout board with Qwiic system.
-* [SPX-14248](https://www.sparkfun.com/products/14248) - SparkX breakout board with Qwiic system.
+* [SEN-14587](https://www.sparkfun.com/products/14587) - SparkFun breakout board with Qwiic system
 * [BOB-13926](https://www.sparkfun.com/products/13926) - Breakout board with headers
-* [SEN-12756](https://www.sparkfun.com/products/12756)- Breakout board
+* [SEN-12756](https://www.sparkfun.com/products/12756) - Breakout board
 
 License Information
 -------------------
