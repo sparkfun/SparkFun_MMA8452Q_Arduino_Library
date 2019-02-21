@@ -409,12 +409,15 @@ void MMA8452Q::writeRegisters(MMA8452Q_Register reg, byte *buffer, byte len)
 //	Read a byte from the MMA8452Q register "reg".
 byte MMA8452Q::readRegister(MMA8452Q_Register reg)
 {
+#ifdef _VARIANT_ARDUINO_DUE_X_
+	_i2cPort->requestFrom((uint8_t)_deviceAddress, (uint8_t)1, (uint32_t)reg, (uint8_t)1, true);
+#else
 	_i2cPort->beginTransmission(_deviceAddress);
 	_i2cPort->write(reg);
 	_i2cPort->endTransmission(false); //endTransmission but keep the connection active
 
 	_i2cPort->requestFrom(_deviceAddress, (byte)1); //Ask for 1 byte, once done, bus is released by default
-
+#endif
 	if (_i2cPort->available())
 	{							 //Wait for the data to come back
 		return _i2cPort->read(); //Return this one byte
@@ -430,11 +433,14 @@ byte MMA8452Q::readRegister(MMA8452Q_Register reg)
 //	in "buffer" on exit.
 void MMA8452Q::readRegisters(MMA8452Q_Register reg, byte *buffer, byte len)
 {
+#ifdef _VARIANT_ARDUINO_DUE_X_
+	_i2cPort->requestFrom((uint8_t)_deviceAddress, (uint8_t)len, (uint32_t)reg, (uint8_t)1, true);
+#else
 	_i2cPort->beginTransmission(_deviceAddress);
 	_i2cPort->write(reg);
-	_i2cPort->endTransmission(false); //endTransmission but keep the connection active
-
+	_i2cPort->endTransmission(false);			//endTransmission but keep the connection active
 	_i2cPort->requestFrom(_deviceAddress, len); //Ask for bytes, once done, bus is released by default
+#endif
 	if (_i2cPort->available() == len)
 	{
 		for (int x = 0; x < len; x++)
