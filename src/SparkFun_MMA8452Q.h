@@ -146,6 +146,9 @@ class MMA8452Q
 	void setScale(MMA8452Q_Scale fsr);
 	void setDataRate(MMA8452Q_ODR odr);
 
+	bool setupSleep(bool enable = 1, bool firstPin = 0, uint8_t ovr = 1, uint8_t ssr = 0, uint8_t wsr = 0, uint8_t timeout = 1);
+	uint8_t wakeOrSleep();
+
   private:
 	TwoWire *_i2cPort = NULL; //The generic connection to user's chosen I2C hardware
 	uint8_t _deviceAddress;   //Keeps track of I2C address. setI2CAddress changes this.

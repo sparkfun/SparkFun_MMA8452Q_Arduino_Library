@@ -54,8 +54,8 @@ bool MMA8452Q::begin(TwoWire &wirePort, uint8_t deviceAddress)
 	scale = SCALE_2G;
 	odr = ODR_800;
 
-	setScale(scale);  // Set up accelerometer scale
-	setDataRate(odr); // Set up output data rate
+	setScale(scale);  	  // Set up accelerometer scale
+	setDataRate(odr); 	  // Set up output data rate
 	setupPL();		  // Set up portrait/landscape detection
 
 	// Multiply parameter by 0.0625g to calculate threshold.
@@ -355,6 +355,79 @@ bool MMA8452Q::isFlat()
 	if (readPL() == LOCKOUT)
 		return true;
 	return false;
+}
+
+// Enable / Disable auto sleep mode. check AN4074
+// Returns false if something went bad.
+//
+// ovr (Oversampling mode, or Power mode) 0 to 3.
+// I think 1 is a sane value for low power devices (2ua difference with 0) but limits to 4g
+// More weird is that if enabled the device does not sleep.
+// But you can enable later without problem.
+//
+// ovr is on bits 3-4 for Active Sleep and 0-1 for Active Wake.
+// For simplification we use the same value
+//
+// ssr Sleep Sample Rate (0 to 3) 0 = 1.56Hz, 6.25Hz, 12.5Hz, 50Hz
+// wsr Wake  Sample Rate (0 to 7) 0 = 1.56Hz, 6.25Hz, 12.5Hz, 50Hz, 100Hz, 200Hz, 400Hz, 800Hz
+//
+// timeout to sleep [seconds] (0 to 81). if ODR 1.56 (0-162) (not supported)
+// firstPin. If true, route events to INT1 (Pin1)
+bool MMA8452Q::setupSleep(bool enable, bool firstPin, uint8_t ovr, uint8_t ssr, uint8_t wsr, uint8_t timeout)
+{
+	if (ovr > 3 || timeout > 81)  // wrong value. Bigger value messes the CTRL_REG2
+		return false;
+
+	if (isActive() == true)
+		standby();
+
+	uint8_t temp = readRegister(CTRL_REG2) & 0b11100000;         // get CTRL_REG2 values without ovrs and sleep mode
+
+	if (enable == true) {
+		// set Sleep bit together with ovr
+		writeRegister(CTRL_REG2, temp | ovr | 0b00000100);   // apply ovr and enable bit2 for sleep mode
+
+		// set Sleep Sample Rate and Wake Sample Rate
+		temp = readRegister(CTRL_REG1) & 0b00000111;         // get CTRL_REG1 without ssr and swr
+		writeRegister(CTRL_REG1, temp | ssr | wsr);          // apply ssr and wsr with lnoise (this limits to 4G)
+
+		// set timeout
+		writeRegister(ASLP_COUNT, timeout);                  // apply timeout
+
+		// set interrupt. Default mapping is to int2
+		temp = readRegister(CTRL_REG4) | 0b10000000;         // read settings and apply wake interrupt
+		writeRegister(CTRL_REG4, temp);                      // apply wake interrupt
+		if (firstPin == true)
+		   writeRegister(CTRL_REG5, 0b10000000);             // route to firstPin
+
+		// wake up causes: transient bit6, freefall/Motion bit3
+		temp = readRegister(CTRL_REG3) | 0b01111100;         // wake with Transient, orientation, tap (pulse), freefall/motion
+		writeRegister(CTRL_REG3, temp);		             // enable wakeup causes
+	} else {
+		writeRegister(CTRL_REG2, temp | ovr & 0b11111011);   // apply ovr and disable bit2 for sleep mode
+	}
+
+	return true; // all OK
+	
+	// Return to active state when done
+	// Must be in active state to read data
+	active();
+}
+
+// check if we are sleeping or not
+// copy / paste from p. 9 AN4074
+// return 2 for sleep, 1 for wake 0 if neither.
+uint8_t MMA8452Q::wakeOrSleep(){
+	uint8_t temp = readRegister(INT_SOURCE); // determine the source of interrupt
+	if ( ( temp &= 0x80) == 0x80){           // set up case statement. We have Auto-sleep flag
+		temp = readRegister(SYSMOD);     // Read system mode to clear the interrupt
+		if ( temp == 0x02) {             // sleep mode
+			return temp;
+		} else if ( temp == 0x01 ) {     // Wake mode
+			return temp;
+		}
+	}
+	return 0;
 }
 
 // SET STANDBY MODE
