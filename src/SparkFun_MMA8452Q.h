@@ -119,6 +119,8 @@ class MMA8452Q
 	MMA8452Q_ODR odr;
 
 	bool begin(TwoWire &wirePort = Wire, uint8_t deviceAddress = MMA8452Q_DEFAULT_ADDRESS);
+	void reset();
+
 	byte init(MMA8452Q_Scale fsr = SCALE_2G, MMA8452Q_ODR odr = ODR_800);
 	void read();
 	byte available();
@@ -146,6 +148,24 @@ class MMA8452Q
 	void setScale(MMA8452Q_Scale fsr);
 	void setDataRate(MMA8452Q_ODR odr);
 
+	bool setupSleep(bool enable = 1, bool firstPin = 0, uint8_t ovrS = 2, uint8_t ovrW = 0, uint8_t ssr = 0, uint8_t wsr = 0, uint8_t timeout = 1);
+	uint8_t wakeOrSleep();
+
+	void setupMotion(bool latch = 1, bool freefall = 0, uint8_t axes = 3, uint8_t threshold = 3, uint8_t debounce = 5);
+	void enableEvents(bool sleep = 1, bool transient = 0, bool orientation = 1, bool tap = 1, bool motion = 1 );
+	void interruptPin(bool sleep = 1, bool transient = 0, bool orientation = 1, bool tap = 1, bool motion = 1, bool polarity = 0, bool openDrain = 0);
+	uint8_t readIRQEvent();
+
+	uint8_t readMotionType();
+
+	void setupPL(uint8_t debounce = 0x50);
+	void setupTap(byte xThs = 0x80, byte yThs = 0x80, byte zThs = 0x8);
+
+	// ERASE
+	void initOld(uint8_t fsr = 2, uint8_t dataRate = 2);
+	void lowPowerEVAL();
+	void lowPowerAN();
+
   private:
 	TwoWire *_i2cPort = NULL; //The generic connection to user's chosen I2C hardware
 	uint8_t _deviceAddress;   //Keeps track of I2C address. setI2CAddress changes this.
@@ -153,8 +173,6 @@ class MMA8452Q
 	void standby();
 	void active();
 	bool isActive();
-	void setupPL();
-	void setupTap(byte xThs, byte yThs, byte zThs);
 	void writeRegister(MMA8452Q_Register reg, byte data);
 	void writeRegisters(MMA8452Q_Register reg, byte *buffer, byte len);
 	byte readRegister(MMA8452Q_Register reg);
