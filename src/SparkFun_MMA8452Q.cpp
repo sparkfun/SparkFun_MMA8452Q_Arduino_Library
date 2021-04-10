@@ -196,6 +196,9 @@ void MMA8452Q::setScale(MMA8452Q_Scale fsr)
 	cfg |= (fsr >> 2); // Neat trick, see page 22. 00 = 2G, 01 = 4A, 10 = 8G
 	writeRegister(XYZ_DATA_CFG, cfg);
 
+	// Set scale factor 
+	scale = fsr
+
 	// Return to active state when done
 	// Must be in active state to read data
 	active();
